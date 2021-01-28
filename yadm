@@ -547,7 +547,7 @@ function alt() {
   local alt_linked=()
 
   alt_linking
-  remove_stale_links
+  [ "$do_copy" -eq 1 ] || remove_stale_links
   report_invalid_alts
 
 }
@@ -636,7 +636,7 @@ function alt_linking() {
   for alt_path in $(for tracked in "${tracked_files[@]}"; do printf "%s\n" "$tracked" "${tracked%/*}"; done | LC_ALL=C sort -u) "${ENCRYPT_INCLUDE_FILES[@]}"; do
     alt_path="$YADM_BASE/$alt_path"
     if [[ "$alt_path" =~ .\#\#. ]]; then
-      if [ -e "$alt_path" ] ; then
+      if [ -e "$alt_path" ] || [ -L "$alt_path" ]; then
         score_file "$alt_path"
       fi
     fi
@@ -664,7 +664,7 @@ function alt_linking() {
       if [ "$do_copy" -eq 1 ]; then
         # remove any existing symlink before copying
         [ -L "$tgt" ] && rm -f "$tgt"
-        cp -f "$src" "$tgt"
+        cp -af "$src" "$tgt"
       else
         ln_relative "$src" "$tgt"
       fi
